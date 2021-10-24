@@ -1,15 +1,53 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import { axios } from 'vue/types/umd'
+import dashboard from '../components/dashboard.vue'
+import { url } from '../store/url'
+
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    redirect: '/dashboard'
   },
+  {
+    path:'/dashboard',
+    name:'dashboard',
+    component: dashboard,
+    beforeEnter: async (to, from , next) =>{
+      const ACCESS_TOKEN = localStorage.getItem('access_token');
+      const LOGIN_STATUS = localStorage.getItem('loginStatus');
+
+      if(ACCESS_TOKEN && ACCESS_TOKEN.length > 0 && LOGIN_STATUS){
+        try{
+          let result = await axios.get(`${url}/admin/profile`,{headers:{'Authorization': `Bearer ${ACCESS_TOKEN}`}})
+
+          if(result.data.success && result.data.data.role_name == 3){
+            if(ACCESS_TOKEN && LOGIN_STATUS){
+              return (next(true))
+            }
+          }else{
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('loginStatus')
+            return next('/login')
+          }
+        }
+        catch(err){
+          if(err.response){
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('loginStatus')
+            return next('/login')
+          }
+        }
+      }
+      else{
+        return next('/login')
+      }
+    }
+  },
+
   {
     path: '/about',
     name: 'About',
