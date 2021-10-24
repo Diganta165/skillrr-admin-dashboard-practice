@@ -56,6 +56,102 @@
 <script>
 export default {
 
+name:'login',
+data(){
+  return{
+       userData:{
+          email:'',    
+        password:''
+       },
+       form:{
+         type:'password',
+         isSubmitting:false,
+         blinkStatus:false
+       },
+       errors:{}
+  }
+},
+methods:{
+  /*Show or hide the password type*/
+  changePasswordType(){   
+ 
+    if(this.form.type == "password"){
+        this.form.type = "text"
+    }else{
+      this.form.type = "password"
+    }
+  },
+  /*Show or hide the password type block end*/
+/*Email Validation */
+isItValidEmail(){
+// eslint-disable-next-line
+  if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.userData.email)) {
+        this.form.isSubmitting = false
+    } else{
+      
+      this.$toastr.e( "Enter a valid email addres","Error");
+       this.errors = 'Enter a valid email address';
+        // console.log(this.errors)
+          this.form.isSubmitting = true
+    }
+},
+/*Email Validation block end */
+/*Remove Email  Validation */
+removeEmailValidationError(){
+   this.errors = ""
+},
+/*Remove Email  Validation block End */
+hasProvidedAllInput(){
+    if(this.userData.email.length>0 && this.userData.password.length>0){
+        this.form.isSubmitting = false
+        this.errors={}
+        return true
+    }else{
+         this.form.isSubmitting = false
+         this.errors = 'Enter valid email or password';
+          this.$toastr.e( "Enter valid email or password","Error");
+        return false
+    }
+  },
+hasLoginError(){
+  this.errors = this.$store.state.login.loginError
+  let roleId = this.$store.state.login.roleId
+  if(this.errors.length>0){
+      this.$toastr.e( `${this.errors}`,"Error");
+  }else{
+    
+    const ACCESS_TOKEN = localStorage.getItem('access_token');
+    const LOGIN_STATUS =  localStorage.getItem('loginStatus');
+  if(ACCESS_TOKEN && LOGIN_STATUS && roleId ==3){
+    this.form.blinkStatus = true
+         this.$toastr.s( "User successfully logged in","Success");
+      this.$router.push('/dashboard');
+    //  setTimeout(()=>{
+    //    this.$toastr.s( "User successfully logged in","Success");
+    //   this.$router.push('/dashboard');
+    //  },1000)
+    
+    
+  }else{
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('loginStatus')
+    this.errors = "unauthenticated user";
+    this.$toastr.e( "unauthenticated user","Login Fail");
+  }
+ 
+  }
+  },
+async login(){
+    if(this.hasProvidedAllInput()){
+    await  this.$store.dispatch('login/userLogin',this.userData) 
+      this.hasLoginError()
+    }   
+ 
+  },
+  
+},
+ 
+ 
 }
 </script>
 

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import { axios } from 'vue/types/umd'
 import dashboard from '../components/dashboard.vue'
+import login from '../components/auth/login.vue'
 import { url } from '../store/url'
 
 
@@ -47,6 +48,19 @@ const routes = [
       }
     }
   },
+
+  {
+    path: '/login',
+    name: 'login',
+    component: login,
+    beforeEnter: (to, from, next) => {
+      const ACCESS_TOKEN = localStorage.getItem('access_token') ?? '';
+      const LOGIN_STATUS = localStorage.getItem('loginStatus') ?? '';
+      if (ACCESS_TOKEN.length <= 0 && LOGIN_STATUS == false) { return next(true) }
+      return next('/dashboard')
+
+  }
+},
 
   {
     path: '/about',
